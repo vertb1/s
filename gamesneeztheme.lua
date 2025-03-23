@@ -251,7 +251,7 @@ local ThemeManager = {} do
         groupbox:AddDropdown("FontFace", {
             Text = "Font Face",
             Default = "Arcade",
-            Values = {"BuilderSans", "Code", "Fantasy", "Gotham", "Jura", "Roboto", "RobotoMono", "SourceSans", "Arcade"}
+            Values = {"BuilderSans", "Code", "Fantasy", "Gotham", "Jura", "Roboto", "RobotoMono", "SourceSans", "Arcade", "SpecialElite"}
         })
 
         
