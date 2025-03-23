@@ -51,7 +51,7 @@ local Window = Library:CreateWindow({
 })
 
 local Tabs = {
-	Main = Window:AddTab("Main", "gamepad-2"),
+	Main = Window:AddTab("Main", "swords"),
 	Misc = Window:AddTab("Misc", "dumbbell"),
 	Visuals = Window:AddTab("Visuals", "eye"),
 	["Configuration"] = Window:AddTab("Configuration", "wrench"),
