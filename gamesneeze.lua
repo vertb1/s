@@ -4484,6 +4484,7 @@ function Library:CreateWindow(WindowInfo)
 
             local GroupboxHolder
             local GroupboxLabel
+            local GroupboxIcon
 
             local GroupboxContainer
             local GroupboxList
@@ -4504,16 +4505,35 @@ function Library:CreateWindow(WindowInfo)
                     Size = UDim2.new(1, 0, 0, 1),
                 })
 
+                -- If an icon is provided, add it
+                local textOffset = 12
+                if Info.Icon then
+                    local IconImage = Library:GetIcon(Info.Icon)
+                    if IconImage then
+                        GroupboxIcon = New("ImageLabel", {
+                            BackgroundTransparency = 1,
+                            Position = UDim2.fromOffset(12, 8),
+                            Size = UDim2.fromOffset(18, 18),
+                            Image = IconImage.Url,
+                            ImageColor3 = "AccentColor",
+                            ImageRectOffset = IconImage.ImageRectOffset,
+                            ImageRectSize = IconImage.ImageRectSize,
+                            Parent = GroupboxHolder,
+                        })
+                        textOffset = 36 -- Adjust text position when icon is present
+                    end
+                end
+
                 GroupboxLabel = New("TextLabel", {
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 0, 34),
                     Text = Info.Name,
                     TextSize = 15,
                     TextXAlignment = Enum.TextXAlignment.Left,
+                    Position = UDim2.fromOffset(textOffset, 0), -- Adjust position based on icon
                     Parent = GroupboxHolder,
                 })
                 New("UIPadding", {
-                    PaddingLeft = UDim.new(0, 12),
                     PaddingRight = UDim.new(0, 12),
                     Parent = GroupboxLabel,
                 })
@@ -4556,12 +4576,12 @@ function Library:CreateWindow(WindowInfo)
             return Groupbox
         end
 
-        function Tab:AddLeftGroupbox(Name)
-            return Tab:AddGroupbox({ Side = 1, Name = Name })
+        function Tab:AddLeftGroupbox(Name, Icon)
+            return Tab:AddGroupbox({ Side = 1, Name = Name, Icon = Icon })
         end
 
-        function Tab:AddRightGroupbox(Name)
-            return Tab:AddGroupbox({ Side = 2, Name = Name })
+        function Tab:AddRightGroupbox(Name, Icon)
+            return Tab:AddGroupbox({ Side = 2, Name = Name, Icon = Icon })
         end
 
         function Tab:AddTabbox(Info)
