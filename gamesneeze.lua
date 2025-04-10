@@ -811,7 +811,7 @@ end
 function Library:MakeLine(Frame: GuiObject, Info)
     local Line = New("Frame", {
         AnchorPoint = Info.AnchorPoint or Vector2.zero,
-        BackgroundColor3 = "OutlineColor",
+        BackgroundTransparency = 1, -- Make the line invisible
         Position = Info.Position,
         Size = Info.Size,
         Parent = Frame,
@@ -2013,9 +2013,7 @@ do
         local Container = Groupbox.Container
 
         local Holder = New("Frame", {
-            BackgroundColor3 = "MainColor",
-            BorderColor3 = "OutlineColor",
-            BorderSizePixel = 1,
+            BackgroundTransparency = 1, -- Change to fully transparent
             Size = UDim2.new(1, 0, 0, 2),
             Parent = Container,
         })
