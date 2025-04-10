@@ -365,18 +365,52 @@ function Library:UpdateKeybindFrame()
     end
 
     local XSize = 0
+    local HasVisibleKeybinds = false
+    
     for _, KeybindToggle in pairs(Library.KeybindToggles) do
         if not KeybindToggle.Holder.Visible then
             continue
         end
-
+        
+        HasVisibleKeybinds = true
         local FullSize = KeybindToggle.Label.Size.X.Offset + KeybindToggle.Label.Position.X.Offset
         if FullSize > XSize then
             XSize = FullSize
         end
     end
 
-    Library.KeybindFrame.Size = UDim2.fromOffset(XSize + 18 * Library.DPIScale, 0)
+    -- Hide the keybind frame if there are no visible keybinds
+    if not HasVisibleKeybinds then
+        Library.KeybindFrame.Visible = false
+    end
+    
+    -- Only update size if we have visible keybinds
+    if HasVisibleKeybinds then
+        Library.KeybindFrame.Size = UDim2.fromOffset(XSize + 18 * Library.DPIScale, 0)
+    end
+end
+
+-- Function to properly show keybind frame only if there are visible keybinds
+function Library:CheckKeybindFrameVisibility(shouldShow)
+    if not Library.KeybindFrame then
+        return false
+    end
+    
+    -- Count visible keybinds
+    local hasVisibleKeybinds = false
+    for _, KeybindToggle in pairs(Library.KeybindToggles) do
+        if KeybindToggle.Holder.Visible then
+            hasVisibleKeybinds = true
+            break
+        end
+    end
+    
+    -- Only show if explicitly requested AND there are visible keybinds
+    if shouldShow ~= nil then
+        Library.KeybindFrame.Visible = shouldShow and hasVisibleKeybinds
+    end
+    
+    return hasVisibleKeybinds
 end
 
 function Library:AddToRegistry(Instance, Properties)
