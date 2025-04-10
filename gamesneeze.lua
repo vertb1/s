@@ -4081,8 +4081,8 @@ function Library:CreateWindow(WindowInfo)
             AnchorPoint = Vector2.new(0, 0.5),
             BackgroundColor3 = "MainColor",
             PlaceholderText = "Search",
-            Position = UDim2.new(0.3, 8, 0.5, 0),
-            Size = UDim2.new(0.7, -57, 1, -16),
+            Position = UDim2.new(0.5, 8, 0.5, 0), -- Changed from 0.3 to 0.5 to move it more to the right
+            Size = UDim2.new(0.45, -57, 1, -16), -- Changed from 0.7 to 0.45 to make it smaller
             TextScaled = true,
             Parent = TopBar,
         })
