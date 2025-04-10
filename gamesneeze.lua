@@ -1496,6 +1496,8 @@ do
             end
 
             Library:UpdateKeybindFrame()
+            -- Check if we should show the keybind frame based on visible keybinds
+            Library:CheckKeybindFrameVisibility(true)
         end
 
         function KeyPicker:GetState()
