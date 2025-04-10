@@ -10,6 +10,9 @@ local TextService: TextService = cloneref(game:GetService("TextService"))
 local Teams: Teams = cloneref(game:GetService("Teams"))
 local TweenService: TweenService = cloneref(game:GetService("TweenService"))
 
+-- Load the AnimLogger library
+local AnimLogger = loadstring(readfile("animlogger.lua"))()
+
 local getgenv = getgenv or function()
     return shared
 end
@@ -4084,7 +4087,7 @@ function Library:CreateWindow(WindowInfo)
             BackgroundColor3 = "MainColor",
             PlaceholderText = "Search",
             Position = UDim2.new(0.3, 8, 0.5, 0),
-            Size = UDim2.new(0.7, -57, 1, -16),
+            Size = UDim2.new(0.4, -20, 1, -16),
             TextScaled = true,
             Parent = TopBar,
         })
@@ -4175,7 +4178,7 @@ function Library:CreateWindow(WindowInfo)
             ImageColor3 = "FontColor",
             ImageRectOffset = ResizeIcon and ResizeIcon.ImageRectOffset or Vector2.zero,
             ImageRectSize = ResizeIcon and ResizeIcon.ImageRectSize or Vector2.zero,
-            ImageTransparency = 0.5,
+            ImageTransparency = 1, -- Set to fully transparent to hide it
             Position = UDim2.fromOffset(2, 2),
             Size = UDim2.new(1, -4, 1, -4),
             Parent = ResizeButton,
@@ -5258,6 +5261,94 @@ Library:GiveSignal(Players.PlayerRemoving:Connect(OnPlayerChange))
 
 Library:GiveSignal(Teams.ChildAdded:Connect(OnTeamChange))
 Library:GiveSignal(Teams.ChildRemoved:Connect(OnTeamChange))
+
+-- Animation Logger
+function Library:AddAnimationLogger(parent, options)
+    options = options or {}
+    
+    local AnimLoggerSettings = {
+        Title = options.Title or "Animation Logger",
+        Position = options.Position or UDim2.new(0, 20, 0, 20),
+        Size = options.Size or UDim2.new(0, 300, 0, 400),
+        MaxLogs = options.MaxLogs or 50,
+        DisplayTime = options.DisplayTime or 5,
+        FontColor = options.FontColor or self.Scheme.FontColor,
+        BackgroundColor = options.BackgroundColor or self.Scheme.MainColor,
+        AccentColor = options.AccentColor or self.Scheme.AccentColor,
+        OutlineColor = options.OutlineColor or self.Scheme.OutlineColor,
+        Font = options.Font or self.Scheme.Font,
+    }
+    
+    -- Apply settings to AnimLogger
+    AnimLogger:SetConfig({
+        BackgroundColor = AnimLoggerSettings.BackgroundColor,
+        FontColor = AnimLoggerSettings.FontColor,
+        AccentColor = AnimLoggerSettings.AccentColor,
+        OutlineColor = AnimLoggerSettings.OutlineColor,
+        ContainerSize = AnimLoggerSettings.Size,
+        EntryHeight = 35,
+        CornerRadius = self.CornerRadius,
+    })
+    AnimLogger.Font = AnimLoggerSettings.Font
+    AnimLogger.MaxLogs = AnimLoggerSettings.MaxLogs
+    AnimLogger.DisplayTime = AnimLoggerSettings.DisplayTime
+    
+    -- Create container
+    local container = AnimLogger:CreateContainer(
+        AnimLoggerSettings.Title,
+        AnimLoggerSettings.Position,
+        parent or self.ScreenGui
+    )
+    
+    local methods = {
+        LogAnimation = function(self, animName, description, fontEffect)
+            return AnimLogger:LogAnimation(AnimLoggerSettings.Title, animName, description, fontEffect)
+        end,
+        
+        RemoveContainer = function(self)
+            AnimLogger:RemoveContainer(AnimLoggerSettings.Title)
+        end,
+        
+        SetTitle = function(self, title)
+            if container and container.Frame and container.Frame:FindFirstChild("Title") then
+                container.Frame.Title.Text = title
+                AnimLoggerSettings.Title = title
+            end
+        end,
+        
+        SetPosition = function(self, position)
+            if container and container.Frame then
+                container.Frame.Position = position
+                AnimLoggerSettings.Position = position
+            end
+        end,
+        
+        SetSize = function(self, size)
+            if container and container.Frame then
+                container.Frame.Size = size
+                AnimLoggerSettings.Size = size
+            end
+        end,
+        
+        Clear = function(self)
+            if container and container.EntriesContainer then
+                for _, child in pairs(container.EntriesContainer:GetChildren()) do
+                    if child:IsA("Frame") then
+                        child:Destroy()
+                    end
+                end
+                container.Entries = {}
+                container.EntriesCount = 0
+            end
+        end,
+        
+        GetContainer = function(self)
+            return container
+        end
+    }
+    
+    return methods
+end
 
 getgenv().Library = Library
 return Library
