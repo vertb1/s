@@ -811,7 +811,7 @@ end
 function Library:MakeLine(Frame: GuiObject, Info)
     local Line = New("Frame", {
         AnchorPoint = Info.AnchorPoint or Vector2.zero,
-        BackgroundTransparency = 1, -- Make the line invisible
+        BackgroundColor3 = "OutlineColor",
         Position = Info.Position,
         Size = Info.Size,
         Parent = Frame,
@@ -4081,8 +4081,8 @@ function Library:CreateWindow(WindowInfo)
             AnchorPoint = Vector2.new(0, 0.5),
             BackgroundColor3 = "MainColor",
             PlaceholderText = "Search",
-            Position = UDim2.new(0.5, 8, 0.5, 0), -- Changed from 0.3 to 0.5 to move it more to the right
-            Size = UDim2.new(0.45, -57, 1, -16), -- Changed from 0.7 to 0.45 to make it smaller
+            Position = UDim2.new(0.6, 8, 0.5, 0), -- Changed from 0.5 to 0.6 to move it even more to the right
+            Size = UDim2.new(0.35, -57, 1, -16), -- Changed from 0.45 to 0.35 to make it even smaller
             TextScaled = true,
             Parent = TopBar,
         })
