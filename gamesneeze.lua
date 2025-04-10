@@ -1402,6 +1402,9 @@ do
             KeybindsToggle.Checkbox = Checkbox
             KeybindsToggle.Loaded = true
             table.insert(Library.KeybindToggles, KeybindsToggle)
+            
+            -- Check keybind frame visibility whenever a new keybind toggle is added
+            Library:CheckKeybindFrameVisibility(true)
         end
 
         local MenuTable = Library:AddContextMenu(Picker, UDim2.fromOffset(62, 0), function()
