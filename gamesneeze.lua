@@ -10,8 +10,14 @@ local TextService: TextService = cloneref(game:GetService("TextService"))
 local Teams: Teams = cloneref(game:GetService("Teams"))
 local TweenService: TweenService = cloneref(game:GetService("TweenService"))
 
--- Load the AnimLogger library
-local AnimLogger = loadstring(readfile("animlogger.lua"))()
+-- Load the AnimLogger library if it exists
+local AnimLogger
+local success, result = pcall(function()
+    return loadstring(readfile("animlogger.lua"))()
+end)
+if success then
+    AnimLogger = result
+end
 
 local getgenv = getgenv or function()
     return shared
@@ -5264,6 +5270,19 @@ Library:GiveSignal(Teams.ChildRemoved:Connect(OnTeamChange))
 
 -- Animation Logger
 function Library:AddAnimationLogger(parent, options)
+    if not AnimLogger then
+        -- Return a dummy implementation if AnimLogger doesn't exist
+        return {
+            LogAnimation = function() return false end,
+            RemoveContainer = function() end,
+            SetTitle = function() end,
+            SetPosition = function() end,
+            SetSize = function() end,
+            Clear = function() end,
+            GetContainer = function() return nil end
+        }
+    end
+    
     options = options or {}
     
     local AnimLoggerSettings = {
