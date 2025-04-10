@@ -4089,10 +4089,10 @@ function Library:CreateWindow(WindowInfo)
 
         --// Search Box
         SearchBox = New("TextBox", {
-            AnchorPoint = Vector2.new(0, 0.5),
+            AnchorPoint = Vector2.new(1, 0.5),
             BackgroundColor3 = "MainColor",
             PlaceholderText = "Search",
-            Position = UDim2.new(0.3, 8, 0.5, 0),
+            Position = UDim2.new(1, -8, 0.5, 0),
             Size = UDim2.new(0.4, -20, 1, -16),
             TextScaled = true,
             Parent = TopBar,
