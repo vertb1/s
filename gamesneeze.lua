@@ -2013,7 +2013,9 @@ do
         local Container = Groupbox.Container
 
         local Holder = New("Frame", {
-            BackgroundTransparency = 1, -- Change to fully transparent
+            BackgroundColor3 = "MainColor",
+            BorderColor3 = "OutlineColor",
+            BorderSizePixel = 1,
             Size = UDim2.new(1, 0, 0, 2),
             Parent = Container,
         })
@@ -4081,8 +4083,8 @@ function Library:CreateWindow(WindowInfo)
             AnchorPoint = Vector2.new(0, 0.5),
             BackgroundColor3 = "MainColor",
             PlaceholderText = "Search",
-            Position = UDim2.new(0.65, 8, 0.5, 0), -- Changed from 0.7 to 0.65 to move it slightly to the left
-            Size = UDim2.new(0.38, -57, 1, -16), -- Keep the same size
+            Position = UDim2.new(0.3, 8, 0.5, 0),
+            Size = UDim2.new(0.7, -57, 1, -16),
             TextScaled = true,
             Parent = TopBar,
         })
@@ -4173,7 +4175,7 @@ function Library:CreateWindow(WindowInfo)
             ImageColor3 = "FontColor",
             ImageRectOffset = ResizeIcon and ResizeIcon.ImageRectOffset or Vector2.zero,
             ImageRectSize = ResizeIcon and ResizeIcon.ImageRectSize or Vector2.zero,
-            ImageTransparency = 1, -- Change from 0.5 to 1 to make it completely invisible
+            ImageTransparency = 0.5,
             Position = UDim2.fromOffset(2, 2),
             Size = UDim2.new(1, -4, 1, -4),
             Parent = ResizeButton,
@@ -4484,7 +4486,6 @@ function Library:CreateWindow(WindowInfo)
 
             local GroupboxHolder
             local GroupboxLabel
-            local GroupboxIcon
 
             local GroupboxContainer
             local GroupboxList
@@ -4505,35 +4506,16 @@ function Library:CreateWindow(WindowInfo)
                     Size = UDim2.new(1, 0, 0, 1),
                 })
 
-                -- If an icon is provided, add it
-                local textOffset = 12
-                if Info.Icon then
-                    local IconImage = Library:GetIcon(Info.Icon)
-                    if IconImage then
-                        GroupboxIcon = New("ImageLabel", {
-                            BackgroundTransparency = 1,
-                            Position = UDim2.fromOffset(12, 8),
-                            Size = UDim2.fromOffset(18, 18),
-                            Image = IconImage.Url,
-                            ImageColor3 = "AccentColor",
-                            ImageRectOffset = IconImage.ImageRectOffset,
-                            ImageRectSize = IconImage.ImageRectSize,
-                            Parent = GroupboxHolder,
-                        })
-                        textOffset = 36 -- Adjust text position when icon is present
-                    end
-                end
-
                 GroupboxLabel = New("TextLabel", {
                     BackgroundTransparency = 1,
                     Size = UDim2.new(1, 0, 0, 34),
                     Text = Info.Name,
                     TextSize = 15,
                     TextXAlignment = Enum.TextXAlignment.Left,
-                    Position = UDim2.fromOffset(textOffset, 0), -- Adjust position based on icon
                     Parent = GroupboxHolder,
                 })
                 New("UIPadding", {
+                    PaddingLeft = UDim.new(0, 12),
                     PaddingRight = UDim.new(0, 12),
                     Parent = GroupboxLabel,
                 })
@@ -4576,12 +4558,12 @@ function Library:CreateWindow(WindowInfo)
             return Groupbox
         end
 
-        function Tab:AddLeftGroupbox(Name, Icon)
-            return Tab:AddGroupbox({ Side = 1, Name = Name, Icon = Icon })
+        function Tab:AddLeftGroupbox(Name)
+            return Tab:AddGroupbox({ Side = 1, Name = Name })
         end
 
-        function Tab:AddRightGroupbox(Name, Icon)
-            return Tab:AddGroupbox({ Side = 2, Name = Name, Icon = Icon })
+        function Tab:AddRightGroupbox(Name)
+            return Tab:AddGroupbox({ Side = 2, Name = Name })
         end
 
         function Tab:AddTabbox(Info)
