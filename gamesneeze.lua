@@ -10,15 +10,6 @@ local TextService: TextService = cloneref(game:GetService("TextService"))
 local Teams: Teams = cloneref(game:GetService("Teams"))
 local TweenService: TweenService = cloneref(game:GetService("TweenService"))
 
--- Load the AnimLogger library if it exists
-local AnimLogger
-local success, result = pcall(function()
-    return loadstring(readfile("animlogger.lua"))()
-end)
-if success then
-    AnimLogger = result
-end
-
 local getgenv = getgenv or function()
     return shared
 end
@@ -86,7 +77,7 @@ local Library = {
         AccentColor = Color3.fromRGB(125, 85, 255),
         OutlineColor = Color3.fromRGB(40, 40, 40),
         FontColor = Color3.new(1, 1, 1),
-        Font = Font.fromEnum(Enum.Font.Arcade),
+        Font = Font.fromEnum(Enum.Font.Code),
 
         Red = Color3.fromRGB(255, 50, 50),
         Dark = Color3.new(0, 0, 0),
@@ -505,7 +496,8 @@ local function FillInstance(Table: { [string]: any }, Instance: GuiObject)
             continue
         elseif ThemeProperties[k] then
             ThemeProperties[k] = nil
-        elseif Library.Scheme[v] or typeof(v) == "function" then
+        elseif k ~= "Text" and (Library.Scheme[v] or typeof(v) == "function") then
+            -- me when Red in dropdowns break things (temp fix - or perm idk if deivid will do something about this)
             ThemeProperties[k] = v
             Instance[k] = Library.Scheme[v] or v()
             continue
@@ -552,14 +544,34 @@ local function New(ClassName: string, Properties: { [string]: any }): any
 end
 
 --// Main Instances \\-
-local function ParentUI(UI: Instance)
-    pcall(protectgui, UI);
-
+local function SafeParentUI(Instance: Instance, Parent: Instance | () -> Instance)
     if not pcall(function()
-            UI.Parent = gethui()
-        end) then
-        UI.Parent = Library.LocalPlayer:WaitForChild("PlayerGui", math.huge)
+        if not Parent then
+            Parent = CoreGui
+        end
+        
+        local DestinationParent
+        if typeof(Parent) == "function" then
+            DestinationParent = Parent()
+        else
+            DestinationParent = Parent
+        end
+
+        Instance.Parent = DestinationParent
+    end) then
+        Instance.Parent = Library.LocalPlayer:WaitForChild("PlayerGui", math.huge)
     end
+end
+
+local function ParentUI(UI: Instance, SkipHiddenUI: boolean?)
+    if SkipHiddenUI then
+        SafeParentUI(UI, CoreGui)
+        return
+    end
+
+    pcall(protectgui, UI)
+
+    SafeParentUI(UI, gethui)
 end
 
 local ScreenGui = New("ScreenGui", {
@@ -574,13 +586,20 @@ ScreenGui.DescendantRemoving:Connect(function(Instance)
     Library.DPIRegistry[Instance] = nil
 end)
 
+local ModalScreenGui = New("ScreenGui", {
+    Name = "ObisidanModal",
+    DisplayOrder = 999,
+    ResetOnSpawn = false,
+})
+ParentUI(ModalScreenGui, true)
+
 local ModalElement = New("TextButton", {
     BackgroundTransparency = 1,
     Modal = false,
     Size = UDim2.fromScale(0, 0),
     Text = "",
     ZIndex = -999,
-    Parent = ScreenGui,
+    Parent = ModalScreenGui,
 })
 
 --// Cursor
@@ -1232,6 +1251,7 @@ function Library:Unload()
 
     Library.Unloaded = true
     ScreenGui:Destroy()
+    ModalScreenGui:Destroy()
     getgenv().Library = nil
 end
 
@@ -4089,11 +4109,11 @@ function Library:CreateWindow(WindowInfo)
 
         --// Search Box
         SearchBox = New("TextBox", {
-            AnchorPoint = Vector2.new(1, 0.5),
+            AnchorPoint = Vector2.new(0, 0.5),
             BackgroundColor3 = "MainColor",
             PlaceholderText = "Search",
-            Position = UDim2.new(1, -8, 0.5, 0),
-            Size = UDim2.new(0.4, -20, 1, -16),
+            Position = UDim2.new(0.3, 8, 0.5, 0),
+            Size = UDim2.new(0.7, -57, 1, -16),
             TextScaled = true,
             Parent = TopBar,
         })
@@ -4124,6 +4144,21 @@ function Library:CreateWindow(WindowInfo)
                 Size = UDim2.fromScale(1, 1),
                 SizeConstraint = Enum.SizeConstraint.RelativeYY,
                 Parent = SearchBox,
+            })
+        end
+
+        local MoveIcon = Library:GetIcon("move")
+        if MoveIcon then
+            New("ImageLabel", {
+                AnchorPoint = Vector2.new(1, 0.5),
+                Image = MoveIcon.Url,
+                ImageColor3 = "OutlineColor",
+                ImageRectOffset = MoveIcon.ImageRectOffset,
+                ImageRectSize = MoveIcon.ImageRectSize,
+                Position = UDim2.new(1, -10, 0.5, 0),
+                Size = UDim2.fromOffset(28, 28),
+                SizeConstraint = Enum.SizeConstraint.RelativeYY,
+                Parent = TopBar,
             })
         end
 
@@ -4184,7 +4219,7 @@ function Library:CreateWindow(WindowInfo)
             ImageColor3 = "FontColor",
             ImageRectOffset = ResizeIcon and ResizeIcon.ImageRectOffset or Vector2.zero,
             ImageRectSize = ResizeIcon and ResizeIcon.ImageRectSize or Vector2.zero,
-            ImageTransparency = 1, -- Set to fully transparent to hide it
+            ImageTransparency = 0.5,
             Position = UDim2.fromOffset(2, 2),
             Size = UDim2.new(1, -4, 1, -4),
             Parent = ResizeButton,
@@ -5267,107 +5302,6 @@ Library:GiveSignal(Players.PlayerRemoving:Connect(OnPlayerChange))
 
 Library:GiveSignal(Teams.ChildAdded:Connect(OnTeamChange))
 Library:GiveSignal(Teams.ChildRemoved:Connect(OnTeamChange))
-
--- Animation Logger
-function Library:AddAnimationLogger(parent, options)
-    if not AnimLogger then
-        -- Return a dummy implementation if AnimLogger doesn't exist
-        return {
-            LogAnimation = function() return false end,
-            RemoveContainer = function() end,
-            SetTitle = function() end,
-            SetPosition = function() end,
-            SetSize = function() end,
-            Clear = function() end,
-            GetContainer = function() return nil end
-        }
-    end
-    
-    options = options or {}
-    
-    local AnimLoggerSettings = {
-        Title = options.Title or "Animation Logger",
-        Position = options.Position or UDim2.new(0, 20, 0, 20),
-        Size = options.Size or UDim2.new(0, 300, 0, 400),
-        MaxLogs = options.MaxLogs or 50,
-        DisplayTime = options.DisplayTime or 5,
-        FontColor = options.FontColor or self.Scheme.FontColor,
-        BackgroundColor = options.BackgroundColor or self.Scheme.MainColor,
-        AccentColor = options.AccentColor or self.Scheme.AccentColor,
-        OutlineColor = options.OutlineColor or self.Scheme.OutlineColor,
-        Font = options.Font or self.Scheme.Font,
-    }
-    
-    -- Apply settings to AnimLogger
-    AnimLogger:SetConfig({
-        BackgroundColor = AnimLoggerSettings.BackgroundColor,
-        FontColor = AnimLoggerSettings.FontColor,
-        AccentColor = AnimLoggerSettings.AccentColor,
-        OutlineColor = AnimLoggerSettings.OutlineColor,
-        ContainerSize = AnimLoggerSettings.Size,
-        EntryHeight = 35,
-        CornerRadius = self.CornerRadius,
-    })
-    AnimLogger.Font = AnimLoggerSettings.Font
-    AnimLogger.MaxLogs = AnimLoggerSettings.MaxLogs
-    AnimLogger.DisplayTime = AnimLoggerSettings.DisplayTime
-    
-    -- Create container
-    local container = AnimLogger:CreateContainer(
-        AnimLoggerSettings.Title,
-        AnimLoggerSettings.Position,
-        parent or self.ScreenGui
-    )
-    
-    local methods = {
-        LogAnimation = function(self, animName, description, fontEffect)
-            return AnimLogger:LogAnimation(AnimLoggerSettings.Title, animName, description, fontEffect)
-        end,
-        
-        RemoveContainer = function(self)
-            AnimLogger:RemoveContainer(AnimLoggerSettings.Title)
-        end,
-        
-        SetTitle = function(self, title)
-            if container and container.Frame and container.Frame:FindFirstChild("Title") then
-                container.Frame.Title.Text = title
-                AnimLoggerSettings.Title = title
-            end
-        end,
-        
-        SetPosition = function(self, position)
-            if container and container.Frame then
-                container.Frame.Position = position
-                AnimLoggerSettings.Position = position
-            end
-        end,
-        
-        SetSize = function(self, size)
-            if container and container.Frame then
-                container.Frame.Size = size
-                AnimLoggerSettings.Size = size
-            end
-        end,
-        
-        Clear = function(self)
-            if container and container.EntriesContainer then
-                for _, child in pairs(container.EntriesContainer:GetChildren()) do
-                    if child:IsA("Frame") then
-                        child:Destroy()
-                    end
-                end
-                container.Entries = {}
-                container.EntriesCount = 0
-            end
-        end,
-        
-        GetContainer = function(self)
-            return container
-        end
-    }
-    
-    return methods
-end
 
 getgenv().Library = Library
 return Library
